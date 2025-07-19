@@ -4,9 +4,10 @@ import * as LocAR from 'locar';
 
 const App: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const headingRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || !headingRef.current) return;
 
     containerRef.current.querySelectorAll('canvas').forEach(canvas => canvas.remove());
 
@@ -15,7 +16,7 @@ const App: React.FC = () => {
       60,
       window.innerWidth / window.innerHeight,
       0.001,
-      100000 // tăng far để không cắt box xa
+      100000
     );
 
     const renderer = new THREE.WebGLRenderer({ alpha: true });
@@ -42,6 +43,23 @@ const App: React.FC = () => {
 
     renderer.setAnimationLoop(() => {
       deviceOrientationControls.update();
+
+      // 🔄 Tính toán heading
+      const dir = new THREE.Vector3();
+      camera.getWorldDirection(dir);
+
+      const angleRad = Math.atan2(dir.x, dir.z);
+      let angleDeg = THREE.MathUtils.radToDeg(angleRad);
+      if (angleDeg < 0) angleDeg += 360;
+
+      let headingText = '';
+      if (angleDeg >= 315 || angleDeg < 45) headingText = 'Bắc';
+      else if (angleDeg >= 45 && angleDeg < 135) headingText = 'Đông';
+      else if (angleDeg >= 135 && angleDeg < 225) headingText = 'Nam';
+      else if (angleDeg >= 225 && angleDeg < 315) headingText = 'Tây';
+
+      headingRef.current!.innerText = `${Math.round(angleDeg)}° - ${headingText}`;
+
       renderer.render(scene, camera);
     });
 
@@ -65,7 +83,6 @@ const App: React.FC = () => {
 
           console.log("✅ Initial GPS position:", { lat, lon });
 
-          // ✅ Set fake GPS ONCE
           locar.fakeGps(lon, lat);
 
           const boxProps: { latDis: number; lonDis: number; colour: number }[] = [
@@ -127,6 +144,7 @@ const App: React.FC = () => {
       }}
     >
       <div
+        ref={headingRef}
         style={{
           position: 'absolute',
           top: 10,
@@ -140,7 +158,7 @@ const App: React.FC = () => {
           zIndex: 1
         }}
       >
-        🔄 Di chuyển & xoay người để thấy đủ 4 box
+        0° - Bắc
       </div>
     </div>
   );
