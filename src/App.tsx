@@ -85,12 +85,14 @@ const App: React.FC = () => {
               geom,
               new THREE.MeshBasicMaterial({ color: boxProp.colour })
             );
-            locar.fakeGps(pos.coords.longitude, pos.coords.latitude);
-            const lon = boxProp.lonDis;
-            const lat = boxProp.latDis;
 
+            const lon = pos.coords.longitude + boxProp.lonDis;
+            const lat = pos.coords.latitude + boxProp.latDis;
+
+            // locar.fakeGps(pos.coords.longitude, pos.coords.latitude);
+            locar.startGps();
             locar.add(mesh, lon, lat);
-            console.log(mesh, lon, lat);
+            // console.log(mesh, lon, lat);
           }
         },
         (err) => {
