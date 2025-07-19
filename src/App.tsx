@@ -52,6 +52,7 @@ const App: React.FC = () => {
       let angleDeg = THREE.MathUtils.radToDeg(angleRad);
       if (angleDeg < 0) angleDeg += 360;
 
+      angleDeg = (angleDeg + 90) % 360;
       let headingText = '';
       if (angleDeg >= 315 || angleDeg < 45) headingText = 'Bắc';
       else if (angleDeg >= 45 && angleDeg < 135) headingText = 'Đông';
