@@ -11,7 +11,12 @@ const App: React.FC = () => {
     containerRef.current.querySelectorAll('canvas').forEach(canvas => canvas.remove());
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.001, 1000);
+    const camera = new THREE.PerspectiveCamera(
+      60,
+      window.innerWidth / window.innerHeight,
+      0.001,
+      100000 // tăng far để không cắt box xa
+    );
 
     const renderer = new THREE.WebGLRenderer({ alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -35,7 +40,6 @@ const App: React.FC = () => {
 
     const deviceOrientationControls = new LocAR.DeviceOrientationControls(camera);
 
-    // Start render loop immediately
     renderer.setAnimationLoop(() => {
       deviceOrientationControls.update();
       renderer.render(scene, camera);
@@ -56,29 +60,22 @@ const App: React.FC = () => {
             return;
           }
 
-          console.log("Initial GPS position:", pos.coords);
+          const lon = pos.coords.longitude;
+          const lat = pos.coords.latitude;
+
+          console.log("✅ Initial GPS position:", { lat, lon });
+
+          // ✅ Set fake GPS ONCE
+          locar.fakeGps(lon, lat);
 
           const boxProps: { latDis: number; lonDis: number; colour: number }[] = [
-            {
-              latDis: 0.001,
-              lonDis: 0,
-              colour: 0xff0000
-            }, {
-              latDis: -0.001,
-              lonDis: 0,
-              colour: 0xffff00
-            }, {
-              latDis: 0,
-              lonDis: -0.001,
-              colour: 0x00ffff
-            }, {
-              latDis: 0,
-              lonDis: 0.001,
-              colour: 0x00ff00
-            }
+            { latDis: 0.002, lonDis: 0, colour: 0xff0000 },     // Bắc
+            { latDis: -0.002, lonDis: 0, colour: 0xffff00 },    // Nam
+            { latDis: 0, lonDis: -0.002, colour: 0x00ffff },    // Tây
+            { latDis: 0, lonDis: 0.002, colour: 0x00ff00 }      // Đông
           ];
 
-          const geom = new THREE.BoxGeometry(20, 20, 20);
+          const geom = new THREE.BoxGeometry(100, 100, 100);
 
           for (const boxProp of boxProps) {
             const mesh = new THREE.Mesh(
@@ -86,13 +83,12 @@ const App: React.FC = () => {
               new THREE.MeshBasicMaterial({ color: boxProp.colour })
             );
 
-            const lon = pos.coords.longitude + boxProp.lonDis;
-            const lat = pos.coords.latitude + boxProp.latDis;
+            const boxLon = lon + boxProp.lonDis;
+            const boxLat = lat + boxProp.latDis;
 
-            // locar.fakeGps(pos.coords.longitude, pos.coords.latitude);
-            locar.startGps();
-            locar.add(mesh, lon, lat);
-            // console.log(mesh, lon, lat);
+            locar.add(mesh, boxLon, boxLat);
+
+            console.log(`🟥 Added box at lat: ${boxLat}, lon: ${boxLon}`, mesh);
           }
         },
         (err) => {
@@ -103,6 +99,11 @@ const App: React.FC = () => {
             alert(`GPS error: ${err.message}`);
           }
           setTimeout(waitForPosition, 3000);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 1000
         }
       );
     };
@@ -115,13 +116,34 @@ const App: React.FC = () => {
     };
   }, []);
 
-  return <div ref={containerRef} style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative' }} />;
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        width: '100vw',
+        height: '100vh',
+        overflow: 'hidden',
+        position: 'relative'
+      }}
+    >
+      <div
+        style={{
+          position: 'absolute',
+          top: 10,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          color: '#fff',
+          background: 'rgba(0,0,0,0.5)',
+          padding: '4px 8px',
+          borderRadius: 4,
+          fontSize: 14,
+          zIndex: 1
+        }}
+      >
+        🔄 Di chuyển & xoay người để thấy đủ 4 box
+      </div>
+    </div>
+  );
 };
 
 export default App;
-
-/*
-✅ Fix:
-- Start render loop immediately so camera feed is visible even if GPS is slow.
-- GPS only adds boxes when available.
-*/
