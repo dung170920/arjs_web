@@ -151,6 +151,8 @@ const App: React.FC = () => {
     };
   }, []);
 
+  console.log(dataItems);
+
   return (
     <div
       ref={containerRef}
