@@ -19,8 +19,8 @@ const App: React.FC = () => {
     const camera = new THREE.PerspectiveCamera(
       80,
       window.innerWidth / window.innerHeight,
-      0.001,
-      10000
+      0.5,
+      500
     );
 
     const renderer = new THREE.WebGLRenderer({ alpha: true });
