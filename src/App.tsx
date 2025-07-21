@@ -138,17 +138,18 @@ const App: React.FC = () => {
 
     headingGroups.forEach((group) => {
       group.forEach((item, index) => {
-        // Offset nhỏ để tránh trùng
         const offsetDeg = index * 3;
         const rad = THREE.MathUtils.degToRad(item.heading + offsetDeg);
 
-        // Khoảng cách từ distance
-        const baseRadius = item.distance * 200;
-        const radius = Math.max(baseRadius, 300 + index * 200);
+        const distanceMax = Math.max(...dataItems.map(item => item.distance));
+        const radiusMin = 500;
+        const radiusMax = 3000;
+        const normalized = item.distance / distanceMax;
+        const radius = radiusMin + normalized * (radiusMax - radiusMin);
 
         const x = radius * Math.sin(rad);
         const z = -radius * Math.cos(rad);
-        const y = index * 50; // cao dần theo thứ tự
+        const y = index * 20;
 
         // const mesh = new THREE.Mesh(
         //   geom,
