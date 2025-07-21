@@ -17,7 +17,7 @@ const App: React.FC = () => {
     const scene = sceneRef.current;
 
     const camera = new THREE.PerspectiveCamera(
-      60,
+      20,
       window.innerWidth / window.innerHeight,
       0.001,
       10000
@@ -159,15 +159,31 @@ const App: React.FC = () => {
 
         // Label
         const canvas = document.createElement('canvas');
-        canvas.width = 500;
+        canvas.width = 400;
         canvas.height = 64;
         const ctx = canvas.getContext('2d')!;
+
+        // Background
         ctx.fillStyle = 'rgba(0,0,0,0.5)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = 'white';
-        ctx.font = '32px Arial';
+        ctx.beginPath();
+        ctx.moveTo(10, 0);
+        ctx.lineTo(canvas.width - 10, 0);
+        ctx.quadraticCurveTo(canvas.width, 0, canvas.width, 10);
+        ctx.lineTo(canvas.width, canvas.height - 10);
+        ctx.quadraticCurveTo(canvas.width, canvas.height, canvas.width - 10, canvas.height);
+        ctx.lineTo(10, canvas.height);
+        ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - 10);
+        ctx.lineTo(0, 10);
+        ctx.quadraticCurveTo(0, 0, 10, 0);
+        ctx.closePath();
+        ctx.fill();
+
+        // text
+        ctx.fillStyle = '#fff';
+        ctx.font = '28px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText(item.label, canvas.width / 2, canvas.height / 2 + 10);
+        ctx.textBaseline = 'middle';
+        ctx.fillText(item.label, canvas.width / 2, canvas.height / 2);
 
         const texture = new THREE.CanvasTexture(canvas);
         const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
