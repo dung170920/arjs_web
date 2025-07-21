@@ -137,18 +137,18 @@ const App: React.FC = () => {
     });
 
     headingGroups.forEach((group) => {
-      group.forEach((item, index) => {
+      group.forEach((item) => {
         const rad = THREE.MathUtils.degToRad(item.heading);
 
         const distanceMax = Math.max(...dataItems.map(item => item.distance));
         const radiusMin = 100;
-        const radiusMax = 1000;
+        const radiusMax = 500;
         const normalized = item.distance / distanceMax;
         const radius = radiusMin + normalized * (radiusMax - radiusMin);
 
         const x = radius * Math.sin(rad);
         const z = -radius * Math.cos(rad);
-        const y = index * 20;
+        // const y = index * 20;
 
         // const mesh = new THREE.Mesh(
         //   geom,
@@ -173,7 +173,7 @@ const App: React.FC = () => {
         const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
         const sprite = new THREE.Sprite(spriteMaterial);
         sprite.scale.set(150, 40, 1);
-        sprite.position.set(x, y + 100, z);
+        sprite.position.set(x, 0, z);
         scene.add(sprite);
       });
     });
