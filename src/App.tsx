@@ -142,7 +142,7 @@ const App: React.FC = () => {
 
         const distanceMax = Math.max(...dataItems.map(item => item.distance));
         const radiusMin = 300;
-        const radiusMax = 800;
+        const radiusMax = 500;
         const normalized = item.distance / distanceMax;
         const radius = radiusMin + normalized * (radiusMax - radiusMin);
 
