@@ -52,7 +52,7 @@ const App: React.FC = () => {
       camera.getWorldDirection(dir);
 
       const angleRad = Math.atan2(dir.x, dir.z);
-      const angleDeg = (THREE.MathUtils.radToDeg(angleRad) + 360) % 360;
+      const angleDeg = THREE.MathUtils.radToDeg(angleRad) % 360;
 
       let headingText = '';
       if (angleDeg < 22.5 || angleDeg >= 337.5) headingText = 'North';
@@ -140,7 +140,7 @@ const App: React.FC = () => {
 
       // Label
       const canvas = document.createElement('canvas');
-      canvas.width = 256;
+      canvas.width = 400;
       canvas.height = 64;
       const ctx = canvas.getContext('2d')!;
       ctx.fillStyle = 'rgba(0,0,0,0.5)';
