@@ -52,7 +52,7 @@ const App: React.FC = () => {
       camera.getWorldDirection(dir);
 
       const angleRad = Math.atan2(dir.x, dir.z);
-      const angleDeg = ((THREE.MathUtils.radToDeg(angleRad) % 360) + 360) % 360;
+      const angleDeg = ((THREE.MathUtils.radToDeg(angleRad) % 360) + 360 + 90) % 360;
 
       let headingText = '';
       if (angleDeg < 22.5 || angleDeg >= 337.5) headingText = 'North';
@@ -143,7 +143,8 @@ const App: React.FC = () => {
         const rad = THREE.MathUtils.degToRad(item.heading + offsetDeg);
 
         // Khoảng cách từ distance
-        const radius = item.distance * 50;
+        const baseRadius = item.distance * 200;
+        const radius = Math.max(baseRadius, 300 + index * 200);
 
         const x = radius * Math.sin(rad);
         const z = -radius * Math.cos(rad);
