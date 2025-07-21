@@ -142,8 +142,8 @@ const App: React.FC = () => {
         const rad = THREE.MathUtils.degToRad(item.heading + offsetDeg);
 
         const distanceMax = Math.max(...dataItems.map(item => item.distance));
-        const radiusMin = 500;
-        const radiusMax = 3000;
+        const radiusMin = 50;
+        const radiusMax = 1000;
         const normalized = item.distance / distanceMax;
         const radius = radiusMin + normalized * (radiusMax - radiusMin);
 
@@ -160,7 +160,7 @@ const App: React.FC = () => {
 
         // Label
         const canvas = document.createElement('canvas');
-        canvas.width = 400;
+        canvas.width = 500;
         canvas.height = 64;
         const ctx = canvas.getContext('2d')!;
         ctx.fillStyle = 'rgba(0,0,0,0.5)';
