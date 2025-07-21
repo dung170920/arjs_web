@@ -126,72 +126,60 @@ const App: React.FC = () => {
 
     // const geom = new THREE.BoxGeometry(100, 100, 100);
 
-    // Gom nhóm item theo heading
-    const headingGroups = new Map<number, IData[]>();
+    dataItems.forEach((item, index) => {
+      const rad = THREE.MathUtils.degToRad(item.heading);
 
-    dataItems.forEach(item => {
-      if (!headingGroups.has(item.heading)) {
-        headingGroups.set(item.heading, []);
-      }
-      headingGroups.get(item.heading)!.push(item);
-    });
+      const distanceMax = Math.max(...dataItems.map(item => item.distance));
+      const radiusMin = 300;
+      const radiusMax = 400;
+      const normalized = item.distance / distanceMax;
+      const radius = radiusMin + normalized * (radiusMax - radiusMin);
 
-    headingGroups.forEach((group) => {
-      group.forEach((item, index) => {
-        const rad = THREE.MathUtils.degToRad(item.heading);
+      const x = radius * Math.sin(rad);
+      const z = -radius * Math.cos(rad);
+      const y = Math.sin(index * 0.5) * 20;
 
-        const distanceMax = Math.max(...dataItems.map(item => item.distance));
-        const radiusMin = 300;
-        const radiusMax = 400;
-        const normalized = item.distance / distanceMax;
-        const radius = radiusMin + normalized * (radiusMax - radiusMin);
+      // const mesh = new THREE.Mesh(
+      //   geom,
+      //   new THREE.MeshBasicMaterial({ color: 0xffaa00 })
+      // );
+      // mesh.position.set(x, y, z);
+      // scene.add(mesh);
 
-        const x = radius * Math.sin(rad);
-        const z = -radius * Math.cos(rad);
-        const y = Math.sin(index * 0.5) * 20;
+      // Label
+      const canvas = document.createElement('canvas');
+      canvas.width = 400;
+      canvas.height = 64;
+      const ctx = canvas.getContext('2d')!;
 
-        // const mesh = new THREE.Mesh(
-        //   geom,
-        //   new THREE.MeshBasicMaterial({ color: 0xffaa00 })
-        // );
-        // mesh.position.set(x, y, z);
-        // scene.add(mesh);
+      // Background
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.beginPath();
+      ctx.moveTo(10, 0);
+      ctx.lineTo(canvas.width - 10, 0);
+      ctx.quadraticCurveTo(canvas.width, 0, canvas.width, 10);
+      ctx.lineTo(canvas.width, canvas.height - 10);
+      ctx.quadraticCurveTo(canvas.width, canvas.height, canvas.width - 10, canvas.height);
+      ctx.lineTo(10, canvas.height);
+      ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - 10);
+      ctx.lineTo(0, 10);
+      ctx.quadraticCurveTo(0, 0, 10, 0);
+      ctx.closePath();
+      ctx.fill();
 
-        // Label
-        const canvas = document.createElement('canvas');
-        canvas.width = 400;
-        canvas.height = 64;
-        const ctx = canvas.getContext('2d')!;
+      // text
+      ctx.fillStyle = '#fff';
+      ctx.font = '40px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(item.label, canvas.width / 2, canvas.height / 2);
 
-        // Background
-        ctx.fillStyle = 'rgba(0,0,0,0.5)';
-        ctx.beginPath();
-        ctx.moveTo(10, 0);
-        ctx.lineTo(canvas.width - 10, 0);
-        ctx.quadraticCurveTo(canvas.width, 0, canvas.width, 10);
-        ctx.lineTo(canvas.width, canvas.height - 10);
-        ctx.quadraticCurveTo(canvas.width, canvas.height, canvas.width - 10, canvas.height);
-        ctx.lineTo(10, canvas.height);
-        ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - 10);
-        ctx.lineTo(0, 10);
-        ctx.quadraticCurveTo(0, 0, 10, 0);
-        ctx.closePath();
-        ctx.fill();
-
-        // text
-        ctx.fillStyle = '#fff';
-        ctx.font = '40px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(item.label, canvas.width / 2, canvas.height / 2);
-
-        const texture = new THREE.CanvasTexture(canvas);
-        const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
-        const sprite = new THREE.Sprite(spriteMaterial);
-        sprite.scale.set(150, 40, 1);
-        sprite.position.set(x, y, z);
-        scene.add(sprite);
-      });
+      const texture = new THREE.CanvasTexture(canvas);
+      const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+      const sprite = new THREE.Sprite(spriteMaterial);
+      sprite.scale.set(150, 40, 1);
+      sprite.position.set(x, y, z);
+      scene.add(sprite);
     });
   }, [dataItems]);
 
