@@ -137,7 +137,7 @@ const App: React.FC = () => {
     });
 
     headingGroups.forEach((group) => {
-      group.forEach((item) => {
+      group.forEach((item, index) => {
         const rad = THREE.MathUtils.degToRad(item.heading);
 
         const distanceMax = Math.max(...dataItems.map(item => item.distance));
@@ -148,7 +148,7 @@ const App: React.FC = () => {
 
         const x = radius * Math.sin(rad);
         const z = -radius * Math.cos(rad);
-        // const y = index * 20;
+        const y = Math.sin(index * 0.5) * 20;
 
         // const mesh = new THREE.Mesh(
         //   geom,
@@ -180,7 +180,7 @@ const App: React.FC = () => {
 
         // text
         ctx.fillStyle = '#fff';
-        ctx.font = '28px Arial';
+        ctx.font = '40px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(item.label, canvas.width / 2, canvas.height / 2);
@@ -189,7 +189,7 @@ const App: React.FC = () => {
         const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
         const sprite = new THREE.Sprite(spriteMaterial);
         sprite.scale.set(150, 40, 1);
-        sprite.position.set(x, 0, z);
+        sprite.position.set(x, y, z);
         scene.add(sprite);
       });
     });
