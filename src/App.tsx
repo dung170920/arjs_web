@@ -53,7 +53,7 @@ const App: React.FC = () => {
       const angleRad = Math.atan2(dir.x, dir.z);
       let angleDeg = THREE.MathUtils.radToDeg(angleRad);
 
-      angleDeg = (angleDeg + 360) % 360;
+      angleDeg = (angleDeg + 90) % 360;
       let headingText = '';
       if (angleDeg < 22.5 || angleDeg >= 337.5) headingText = 'North';
       else if (angleDeg >= 22.5 && angleDeg < 67.5) headingText = 'Northeast';
@@ -90,29 +90,6 @@ const App: React.FC = () => {
           console.log("✅ Initial GPS position:", { lat, lon });
 
           locar.fakeGps(lon, lat);
-
-          const boxProps: { latDis: number; lonDis: number; colour: number }[] = [
-            { latDis: 0.002, lonDis: 0, colour: 0xff0000 },     // Bắc
-            { latDis: -0.002, lonDis: 0, colour: 0xffff00 },    // Nam
-            { latDis: 0, lonDis: -0.002, colour: 0x00ffff },    // Tây
-            { latDis: 0, lonDis: 0.002, colour: 0x00ff00 }      // Đông
-          ];
-
-          const geom = new THREE.BoxGeometry(100, 100, 100);
-
-          for (const boxProp of boxProps) {
-            const mesh = new THREE.Mesh(
-              geom,
-              new THREE.MeshBasicMaterial({ color: boxProp.colour })
-            );
-
-            const boxLon = lon + boxProp.lonDis;
-            const boxLat = lat + boxProp.latDis;
-
-            locar.add(mesh, boxLon, boxLat);
-
-            console.log(`🟥 Added box at lat: ${boxLat}, lon: ${boxLon}`, mesh);
-          }
         },
         (err) => {
           console.error("GPS error:", err);
@@ -135,7 +112,6 @@ const App: React.FC = () => {
       try {
         const res = await fetch('https://gist.githubusercontent.com/dung170920/c2c0d752ae7f15258f8854d8fd6383fe/raw/ar.json');
         const json = await res.json();
-
         setDataItems(json);
       } catch (err) {
         console.error('Error fetching JSON:', err);
@@ -151,7 +127,45 @@ const App: React.FC = () => {
     };
   }, []);
 
-  console.log(dataItems);
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const scene = new THREE.Scene(); // scene đã có
+    const radius = 500;
+    const geom = new THREE.BoxGeometry(100, 100, 100);
+
+    dataItems.forEach(item => {
+      const rad = THREE.MathUtils.degToRad(item.heading);
+      const x = radius * Math.sin(rad);
+      const z = -radius * Math.cos(rad);
+
+      const mesh = new THREE.Mesh(
+        geom,
+        new THREE.MeshBasicMaterial({ color: 0xffaa00 })
+      );
+      mesh.position.set(x, 0, z);
+      scene.add(mesh);
+
+      // label
+      const canvas = document.createElement('canvas');
+      canvas.width = 256;
+      canvas.height = 64;
+      const ctx = canvas.getContext('2d')!;
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'white';
+      ctx.font = '32px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(item.label, canvas.width / 2, canvas.height / 2 + 10);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+      const sprite = new THREE.Sprite(spriteMaterial);
+      sprite.scale.set(150, 40, 1);
+      sprite.position.set(x, 100, z);
+      scene.add(sprite);
+    });
+  }, [dataItems]);
 
   return (
     <div
