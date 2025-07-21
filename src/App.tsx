@@ -1,10 +1,12 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import * as LocAR from 'locar';
+import type { IData } from './types';
 
 const App: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLDivElement>(null);
+  const [dataItems, setDataItems] = useState<Array<IData>>([]);
 
   useEffect(() => {
     if (!containerRef.current || !headingRef.current) return;
@@ -50,14 +52,17 @@ const App: React.FC = () => {
 
       const angleRad = Math.atan2(dir.x, dir.z);
       let angleDeg = THREE.MathUtils.radToDeg(angleRad);
-      if (angleDeg < 0) angleDeg += 360;
 
-      angleDeg = (angleDeg + 90) % 360;
+      angleDeg = (angleDeg + 360) % 360;
       let headingText = '';
-      if (angleDeg >= 315 || angleDeg < 45) headingText = 'Bắc';
-      else if (angleDeg >= 45 && angleDeg < 135) headingText = 'Đông';
-      else if (angleDeg >= 135 && angleDeg < 225) headingText = 'Nam';
-      else if (angleDeg >= 225 && angleDeg < 315) headingText = 'Tây';
+      if (angleDeg < 22.5 || angleDeg >= 337.5) headingText = 'North';
+      else if (angleDeg >= 22.5 && angleDeg < 67.5) headingText = 'Northeast';
+      else if (angleDeg >= 67.5 && angleDeg < 112.5) headingText = 'East';
+      else if (angleDeg >= 112.5 && angleDeg < 157.5) headingText = 'Southeast';
+      else if (angleDeg >= 157.5 && angleDeg < 202.5) headingText = 'South';
+      else if (angleDeg >= 202.5 && angleDeg < 247.5) headingText = 'Southwest';
+      else if (angleDeg >= 247.5 && angleDeg < 292.5) headingText = 'West';
+      else if (angleDeg >= 292.5 && angleDeg < 337.5) headingText = 'Northwest';
 
       headingRef.current!.innerText = `${Math.round(angleDeg)}° - ${headingText}`;
 
@@ -126,6 +131,18 @@ const App: React.FC = () => {
       );
     };
 
+    const fetchData = async () => {
+      try {
+        const res = await fetch('https://gist.githubusercontent.com/dung170920/c2c0d752ae7f15258f8854d8fd6383fe/raw/ar.json');
+        const json = await res.json();
+
+        setDataItems(json);
+      } catch (err) {
+        console.error('Error fetching JSON:', err);
+      }
+    };
+
+    fetchData();
     waitForPosition();
 
     return () => {
@@ -159,7 +176,7 @@ const App: React.FC = () => {
           zIndex: 1
         }}
       >
-        0° - Bắc
+        0° - North
       </div>
     </div>
   );
