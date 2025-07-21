@@ -124,7 +124,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const scene = sceneRef.current;
     const radius = 500;
-    const geom = new THREE.BoxGeometry(100, 100, 100);
+    // const geom = new THREE.BoxGeometry(100, 100, 100);
 
     dataItems.forEach(item => {
       const rad = THREE.MathUtils.degToRad(item.heading);
