@@ -17,7 +17,7 @@ const App: React.FC = () => {
     const scene = sceneRef.current;
 
     const camera = new THREE.PerspectiveCamera(
-      80,
+      100,
       window.innerWidth / window.innerHeight,
       0.5,
       500
@@ -52,7 +52,7 @@ const App: React.FC = () => {
       camera.getWorldDirection(dir);
 
       const angleRad = Math.atan2(dir.x, dir.z);
-      const angleDeg = ((THREE.MathUtils.radToDeg(angleRad) % 360) + 360) % 360;
+      const angleDeg = ((THREE.MathUtils.radToDeg(angleRad) % 360) + 360 + 60) % 360;
 
       let headingText = '';
       if (angleDeg < 22.5 || angleDeg >= 337.5) headingText = 'North';
