@@ -20,7 +20,7 @@ const App: React.FC = () => {
       60,
       window.innerWidth / window.innerHeight,
       0.001,
-      100000
+      10000
     );
 
     const renderer = new THREE.WebGLRenderer({ alpha: true });
