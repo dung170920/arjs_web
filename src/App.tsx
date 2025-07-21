@@ -141,8 +141,8 @@ const App: React.FC = () => {
         const rad = THREE.MathUtils.degToRad(item.heading);
 
         const distanceMax = Math.max(...dataItems.map(item => item.distance));
-        const radiusMin = 500;
-        const radiusMax = 1000;
+        const radiusMin = 300;
+        const radiusMax = 800;
         const normalized = item.distance / distanceMax;
         const radius = radiusMin + normalized * (radiusMax - radiusMin);
 
