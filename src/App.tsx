@@ -6,14 +6,16 @@ import type { IData } from './types';
 const App: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLDivElement>(null);
-  const [dataItems, setDataItems] = useState<Array<IData>>([]);
+  const sceneRef = useRef<THREE.Scene>(new THREE.Scene());
+  const [dataItems, setDataItems] = useState<IData[]>([]);
 
   useEffect(() => {
     if (!containerRef.current || !headingRef.current) return;
 
     containerRef.current.querySelectorAll('canvas').forEach(canvas => canvas.remove());
 
-    const scene = new THREE.Scene();
+    const scene = sceneRef.current;
+
     const camera = new THREE.PerspectiveCamera(
       60,
       window.innerWidth / window.innerHeight,
@@ -46,14 +48,12 @@ const App: React.FC = () => {
     renderer.setAnimationLoop(() => {
       deviceOrientationControls.update();
 
-      // 🔄 Tính toán heading
       const dir = new THREE.Vector3();
       camera.getWorldDirection(dir);
 
       const angleRad = Math.atan2(dir.x, dir.z);
-      let angleDeg = THREE.MathUtils.radToDeg(angleRad);
+      const angleDeg = (THREE.MathUtils.radToDeg(angleRad) + 360) % 360;
 
-      angleDeg = (angleDeg + 90) % 360;
       let headingText = '';
       if (angleDeg < 22.5 || angleDeg >= 337.5) headingText = 'North';
       else if (angleDeg >= 22.5 && angleDeg < 67.5) headingText = 'Northeast';
@@ -78,8 +78,7 @@ const App: React.FC = () => {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           if (!pos.coords || (!pos.coords.latitude && !pos.coords.longitude)) {
-            console.warn("No initial GPS position determined.");
-            alert("Unable to determine initial GPS position. Please move to an open area and enable GPS.");
+            alert("Unable to determine GPS position. Please move to an open area.");
             setTimeout(waitForPosition, 3000);
             return;
           }
@@ -87,17 +86,10 @@ const App: React.FC = () => {
           const lon = pos.coords.longitude;
           const lat = pos.coords.latitude;
 
-          console.log("✅ Initial GPS position:", { lat, lon });
-
           locar.fakeGps(lon, lat);
         },
         (err) => {
           console.error("GPS error:", err);
-          if (err.code === 2) {
-            alert("GPS Position update is unavailable. Please ensure GPS is enabled and move to an open area.");
-          } else {
-            alert(`GPS error: ${err.message}`);
-          }
           setTimeout(waitForPosition, 3000);
         },
         {
@@ -110,7 +102,9 @@ const App: React.FC = () => {
 
     const fetchData = async () => {
       try {
-        const res = await fetch('https://gist.githubusercontent.com/dung170920/c2c0d752ae7f15258f8854d8fd6383fe/raw/ar.json');
+        const res = await fetch(
+          'https://gist.githubusercontent.com/dung170920/c2c0d752ae7f15258f8854d8fd6383fe/raw/ar.json'
+        );
         const json = await res.json();
         setDataItems(json);
       } catch (err) {
@@ -128,9 +122,7 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!containerRef.current) return;
-
-    const scene = new THREE.Scene(); // scene đã có
+    const scene = sceneRef.current;
     const radius = 500;
     const geom = new THREE.BoxGeometry(100, 100, 100);
 
@@ -146,7 +138,7 @@ const App: React.FC = () => {
       mesh.position.set(x, 0, z);
       scene.add(mesh);
 
-      // label
+      // Label
       const canvas = document.createElement('canvas');
       canvas.width = 256;
       canvas.height = 64;
