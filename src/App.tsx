@@ -17,7 +17,7 @@ const App: React.FC = () => {
     const scene = sceneRef.current;
 
     const camera = new THREE.PerspectiveCamera(
-      20,
+      80,
       window.innerWidth / window.innerHeight,
       0.001,
       10000
