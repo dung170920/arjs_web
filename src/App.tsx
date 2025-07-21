@@ -52,7 +52,7 @@ const App: React.FC = () => {
       camera.getWorldDirection(dir);
 
       const angleRad = Math.atan2(dir.x, dir.z);
-      const angleDeg = ((THREE.MathUtils.radToDeg(angleRad) % 360) + 360 + 90) % 360;
+      const angleDeg = ((THREE.MathUtils.radToDeg(angleRad) % 360) + 360) % 360;
 
       let headingText = '';
       if (angleDeg < 22.5 || angleDeg >= 337.5) headingText = 'North';
@@ -123,39 +123,58 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const scene = sceneRef.current;
-    const radius = 500;
-    // const geom = new THREE.BoxGeometry(100, 100, 100);
+
+    const geom = new THREE.BoxGeometry(100, 100, 100);
+
+    // Gom nhóm item theo heading
+    const headingGroups = new Map<number, IData[]>();
 
     dataItems.forEach(item => {
-      const rad = THREE.MathUtils.degToRad(item.heading);
-      const x = radius * Math.sin(rad);
-      const z = -radius * Math.cos(rad);
+      if (!headingGroups.has(item.heading)) {
+        headingGroups.set(item.heading, []);
+      }
+      headingGroups.get(item.heading)!.push(item);
+    });
 
-      // const mesh = new THREE.Mesh(
-      //   geom,
-      //   new THREE.MeshBasicMaterial({ color: 0xffaa00 })
-      // );
-      // mesh.position.set(x, 0, z);
-      // scene.add(mesh);
+    headingGroups.forEach((group) => {
+      group.forEach((item, index) => {
+        // Offset nhỏ để tránh trùng
+        const offsetDeg = index * 3;
+        const rad = THREE.MathUtils.degToRad(item.heading + offsetDeg);
 
-      // Label
-      const canvas = document.createElement('canvas');
-      canvas.width = 400;
-      canvas.height = 64;
-      const ctx = canvas.getContext('2d')!;
-      ctx.fillStyle = 'rgba(0,0,0,0.5)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = 'white';
-      ctx.font = '32px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText(item.label, canvas.width / 2, canvas.height / 2 + 10);
+        // Khoảng cách từ distance
+        const radius = item.distance * 50;
 
-      const texture = new THREE.CanvasTexture(canvas);
-      const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
-      const sprite = new THREE.Sprite(spriteMaterial);
-      sprite.scale.set(150, 40, 1);
-      sprite.position.set(x, 100, z);
-      scene.add(sprite);
+        const x = radius * Math.sin(rad);
+        const z = -radius * Math.cos(rad);
+        const y = index * 50; // cao dần theo thứ tự
+
+        const mesh = new THREE.Mesh(
+          geom,
+          new THREE.MeshBasicMaterial({ color: 0xffaa00 })
+        );
+        mesh.position.set(x, y, z);
+        scene.add(mesh);
+
+        // Label
+        const canvas = document.createElement('canvas');
+        canvas.width = 256;
+        canvas.height = 64;
+        const ctx = canvas.getContext('2d')!;
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'white';
+        ctx.font = '32px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(item.label, canvas.width / 2, canvas.height / 2 + 10);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+        const sprite = new THREE.Sprite(spriteMaterial);
+        sprite.scale.set(150, 40, 1);
+        sprite.position.set(x, y + 100, z);
+        scene.add(sprite);
+      });
     });
   }, [dataItems]);
 
