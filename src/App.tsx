@@ -131,12 +131,12 @@ const App: React.FC = () => {
       const x = radius * Math.sin(rad);
       const z = -radius * Math.cos(rad);
 
-      const mesh = new THREE.Mesh(
-        geom,
-        new THREE.MeshBasicMaterial({ color: 0xffaa00 })
-      );
-      mesh.position.set(x, 0, z);
-      scene.add(mesh);
+      // const mesh = new THREE.Mesh(
+      //   geom,
+      //   new THREE.MeshBasicMaterial({ color: 0xffaa00 })
+      // );
+      // mesh.position.set(x, 0, z);
+      // scene.add(mesh);
 
       // Label
       const canvas = document.createElement('canvas');
