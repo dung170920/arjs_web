@@ -140,18 +140,11 @@ const App: React.FC = () => {
       group.forEach((item) => {
         const rad = THREE.MathUtils.degToRad(item.heading);
 
-        const distances = dataItems.map(it => it.distance);
-        const minDistance = Math.min(...distances);
-        const maxDistance = Math.max(...distances);
-
-        const radiusSceneMin = 3;   // gần nhất ~3m
-        const radiusSceneMax = 30;  // xa nhất ~30m
-
-        const normalized =
-          (item.distance - minDistance) / (maxDistance - minDistance);
-
-        const radius =
-          radiusSceneMin + normalized * (radiusSceneMax - radiusSceneMin);
+        const distanceMax = Math.max(...dataItems.map(item => item.distance));
+        const radiusMin = 300;
+        const radiusMax = 500;
+        const normalized = item.distance / distanceMax;
+        const radius = radiusMin + normalized * (radiusMax - radiusMin);
 
         const x = radius * Math.sin(rad);
         const z = -radius * Math.cos(rad);
