@@ -124,7 +124,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const scene = sceneRef.current;
 
-    const geom = new THREE.BoxGeometry(100, 100, 100);
+    // const geom = new THREE.BoxGeometry(100, 100, 100);
 
     // Gom nhóm item theo heading
     const headingGroups = new Map<number, IData[]>();
@@ -149,16 +149,16 @@ const App: React.FC = () => {
         const z = -radius * Math.cos(rad);
         const y = index * 50; // cao dần theo thứ tự
 
-        const mesh = new THREE.Mesh(
-          geom,
-          new THREE.MeshBasicMaterial({ color: 0xffaa00 })
-        );
-        mesh.position.set(x, y, z);
-        scene.add(mesh);
+        // const mesh = new THREE.Mesh(
+        //   geom,
+        //   new THREE.MeshBasicMaterial({ color: 0xffaa00 })
+        // );
+        // mesh.position.set(x, y, z);
+        // scene.add(mesh);
 
         // Label
         const canvas = document.createElement('canvas');
-        canvas.width = 256;
+        canvas.width = 400;
         canvas.height = 64;
         const ctx = canvas.getContext('2d')!;
         ctx.fillStyle = 'rgba(0,0,0,0.5)';
