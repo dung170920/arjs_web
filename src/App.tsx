@@ -52,7 +52,7 @@ const App: React.FC = () => {
       camera.getWorldDirection(dir);
 
       const angleRad = Math.atan2(dir.x, dir.z);
-      const angleDeg = ((THREE.MathUtils.radToDeg(angleRad) % 360) + 360 + 90) % 360;
+      const angleDeg = ((THREE.MathUtils.radToDeg(angleRad) % 360) + 360) % 360;
 
       let headingText = '';
       if (angleDeg < 22.5 || angleDeg >= 337.5) headingText = 'North';
