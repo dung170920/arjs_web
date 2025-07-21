@@ -138,12 +138,11 @@ const App: React.FC = () => {
 
     headingGroups.forEach((group) => {
       group.forEach((item, index) => {
-        const offsetDeg = index * 3;
-        const rad = THREE.MathUtils.degToRad(item.heading + offsetDeg);
+        const rad = THREE.MathUtils.degToRad(item.heading);
 
         const distanceMax = Math.max(...dataItems.map(item => item.distance));
-        const radiusMin = 50;
-        const radiusMax = 1000;
+        const radiusMin = 500;
+        const radiusMax = 2000;
         const normalized = item.distance / distanceMax;
         const radius = radiusMin + normalized * (radiusMax - radiusMin);
 
