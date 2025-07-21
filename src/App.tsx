@@ -137,7 +137,7 @@ const App: React.FC = () => {
 
       const x = radius * Math.sin(rad);
       const z = -radius * Math.cos(rad);
-      const y = Math.sin(index * 0.5) * 20;
+      const y = Math.sin(index * 0.5) * 40;
 
       // const mesh = new THREE.Mesh(
       //   geom,
@@ -148,7 +148,7 @@ const App: React.FC = () => {
 
       // Label
       const canvas = document.createElement('canvas');
-      canvas.width = 400;
+      canvas.width = 800;
       canvas.height = 64;
       const ctx = canvas.getContext('2d')!;
 
