@@ -54,7 +54,7 @@ const App: React.FC = () => {
       camera.getWorldDirection(dir);
 
       const angleRad = Math.atan2(dir.x, dir.z);
-      const angleDeg = ((THREE.MathUtils.radToDeg(angleRad) + 360) % 360);
+      const angleDeg = ((THREE.MathUtils.radToDeg(angleRad) - 30 + 360) % 360);
 
       if (initialHeadingRef.current === null) {
         initialHeadingRef.current = angleDeg;
@@ -131,8 +131,6 @@ const App: React.FC = () => {
     const scene = sceneRef.current;
 
     if (initialHeadingRef.current === null) return;
-
-    // const baseHeading = initialHeadingRef.current;
 
     dataItems.forEach((item, index) => {
       const rad = THREE.MathUtils.degToRad(item.heading);
