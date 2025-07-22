@@ -8,9 +8,12 @@ const TiltCheck: React.FC = () => {
     const handleOrientation = (event: DeviceOrientationEvent) => {
       const beta = event.beta ?? 0; // front-back tilt
 
-      if (beta > 15) {
+      const threshold = 15;
+      const target = 90;
+
+      if (beta > target + threshold) {
         setTiltMessage('You are tilting the phone too far upward');
-      } else if (beta < -15) {
+      } else if (beta < target - threshold) {
         setTiltMessage('You are tilting the phone too far downward');
       } else {
         setTiltMessage(null);
