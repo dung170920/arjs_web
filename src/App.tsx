@@ -10,6 +10,7 @@ const App: React.FC = () => {
   const sceneRef = useRef<THREE.Scene>(new THREE.Scene());
   const [dataItems, setDataItems] = useState<IData[]>([]);
   const initialHeadingRef = useRef<number | null>(null);
+  const spritesRef = useRef<{ sprite: THREE.Sprite; heading: number }[]>([]);
 
   useEffect(() => {
     if (!containerRef.current || !headingRef.current) return;
@@ -19,7 +20,7 @@ const App: React.FC = () => {
     const scene = sceneRef.current;
 
     const camera = new THREE.PerspectiveCamera(
-      60,
+      60, // realistic FOV
       window.innerWidth / window.innerHeight,
       0.5,
       500
@@ -56,12 +57,11 @@ const App: React.FC = () => {
       const angleRad = Math.atan2(dir.x, dir.z);
       const angleDeg = ((THREE.MathUtils.radToDeg(angleRad) + 360) % 360);
 
-      // Ghi lại initialHeading lần đầu tiên
       if (initialHeadingRef.current === null) {
         initialHeadingRef.current = angleDeg;
       }
 
-      // Hiển thị heading hiện tại
+      // Update heading text
       let headingText = '';
       if (angleDeg < 22.5 || angleDeg >= 337.5) headingText = 'North';
       else if (angleDeg >= 22.5 && angleDeg < 67.5) headingText = 'Northeast';
@@ -73,6 +73,14 @@ const App: React.FC = () => {
       else if (angleDeg >= 292.5 && angleDeg < 337.5) headingText = 'Northwest';
 
       headingRef.current!.innerText = `${Math.round(angleDeg)}° - ${headingText}`;
+
+      // Filter FOV ±30°
+      spritesRef.current.forEach(({ sprite, heading }) => {
+        let delta = Math.abs(heading - angleDeg);
+        if (delta > 180) delta = 360 - delta;
+
+        sprite.visible = delta <= 30;
+      });
 
       renderer.render(scene, camera);
     });
@@ -136,6 +144,8 @@ const App: React.FC = () => {
 
     const baseHeading = initialHeadingRef.current;
 
+    spritesRef.current = []; // clear old
+
     dataItems.forEach((item, index) => {
       const relativeHeading = (item.heading - baseHeading + 360) % 360;
       const rad = THREE.MathUtils.degToRad(relativeHeading);
@@ -155,7 +165,6 @@ const App: React.FC = () => {
       canvas.height = 256;
       const ctx = canvas.getContext('2d')!;
 
-      // Background
       ctx.fillStyle = 'rgba(0,0,0,0.5)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -171,6 +180,8 @@ const App: React.FC = () => {
       sprite.scale.set(150, 40, 1);
       sprite.position.set(x, y, z);
       scene.add(sprite);
+
+      spritesRef.current.push({ sprite, heading: relativeHeading });
     });
   }, [dataItems]);
 
