@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import * as LocAR from 'locar';
 import type { IData } from './types';
+import TiltCheck from './components/TiltCheck';
 
 const App: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -210,6 +211,7 @@ const App: React.FC = () => {
       >
         0° - North
       </div>
+      <TiltCheck />
     </div>
   );
 };
