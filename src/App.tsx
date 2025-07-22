@@ -138,7 +138,7 @@ const App: React.FC = () => {
 
       const x = radius * Math.sin(rad);
       const z = -radius * Math.cos(rad);
-      const y = Math.sin(index * 0.5) * 80;
+      const y = Math.sin(index * 0.5) * 40;
 
       // const mesh = new THREE.Mesh(
       //   geom,
