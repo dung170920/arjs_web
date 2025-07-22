@@ -9,6 +9,7 @@ const App: React.FC = () => {
   const headingRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene>(new THREE.Scene());
   const [dataItems, setDataItems] = useState<IData[]>([]);
+  const initialHeadingRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!containerRef.current || !headingRef.current) return;
@@ -53,8 +54,14 @@ const App: React.FC = () => {
       camera.getWorldDirection(dir);
 
       const angleRad = Math.atan2(dir.x, dir.z);
-      const angleDeg = ((THREE.MathUtils.radToDeg(angleRad) % 360) + 360 + 60) % 360;
+      const angleDeg = ((THREE.MathUtils.radToDeg(angleRad) + 360) % 360);
 
+      // Ghi lại initialHeading lần đầu tiên
+      if (initialHeadingRef.current === null) {
+        initialHeadingRef.current = angleDeg;
+      }
+
+      // Hiển thị heading hiện tại
       let headingText = '';
       if (angleDeg < 22.5 || angleDeg >= 337.5) headingText = 'North';
       else if (angleDeg >= 22.5 && angleDeg < 67.5) headingText = 'Northeast';
@@ -125,10 +132,13 @@ const App: React.FC = () => {
   useEffect(() => {
     const scene = sceneRef.current;
 
-    // const geom = new THREE.BoxGeometry(100, 100, 100);
+    if (initialHeadingRef.current === null) return;
+
+    const baseHeading = initialHeadingRef.current;
 
     dataItems.forEach((item, index) => {
-      const rad = THREE.MathUtils.degToRad(item.heading);
+      const relativeHeading = (item.heading - baseHeading + 360) % 360;
+      const rad = THREE.MathUtils.degToRad(relativeHeading);
 
       const distanceMax = Math.max(...dataItems.map(item => item.distance));
       const radiusMin = 200;
@@ -140,14 +150,6 @@ const App: React.FC = () => {
       const z = -radius * Math.cos(rad);
       const y = Math.sin(index * 0.5) * 40;
 
-      // const mesh = new THREE.Mesh(
-      //   geom,
-      //   new THREE.MeshBasicMaterial({ color: 0xffaa00 })
-      // );
-      // mesh.position.set(x, y, z);
-      // scene.add(mesh);
-
-      // Label
       const canvas = document.createElement('canvas');
       canvas.width = 1024;
       canvas.height = 256;
@@ -155,20 +157,8 @@ const App: React.FC = () => {
 
       // Background
       ctx.fillStyle = 'rgba(0,0,0,0.5)';
-      ctx.beginPath();
-      ctx.moveTo(10, 0);
-      ctx.lineTo(canvas.width - 10, 0);
-      ctx.quadraticCurveTo(canvas.width, 0, canvas.width, 10);
-      ctx.lineTo(canvas.width, canvas.height - 10);
-      ctx.quadraticCurveTo(canvas.width, canvas.height, canvas.width - 10, canvas.height);
-      ctx.lineTo(10, canvas.height);
-      ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - 10);
-      ctx.lineTo(0, 10);
-      ctx.quadraticCurveTo(0, 0, 10, 0);
-      ctx.closePath();
-      ctx.fill();
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // text
       ctx.fillStyle = '#fff';
       ctx.font = '80px Arial';
       ctx.textAlign = 'center';
