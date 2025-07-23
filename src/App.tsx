@@ -25,11 +25,11 @@ const App: React.FC = () => {
         const distance = haversine(location, FIXED_COORDS, { unit: 'meter' });
         if (distance > 100) {
           throw new Error(`You are ${Math.round(distance)}m away. Move closer to use this experience.`);
+        } else {
+          setState('ready');
+          setLatLon(location);
         }
 
-        setLatLon(location);
-
-        setState('ready');
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (e: any) {
         console.log(e);
