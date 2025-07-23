@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import ARPage from './pages/ARPage';
 import ErrorPage from './pages/ErrorPage';
 import { isARSupportedOnDevice, requestLocationPermission, getCurrentLocation } from './utils/checks';
@@ -11,44 +11,50 @@ const App: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [latLon, setLatLon] = useState<{ lat: number; lon: number } | null>(null);
 
-  useEffect(() => {
-    const checkRequirements = async () => {
-      try {
-        const ar = await isARSupportedOnDevice();
-        if (!ar) throw new Error("Your device does not support AR.");
+  const checkRequirements = useCallback(async () => {
+    setState('loading');
+    setError('');
+    try {
+      const ar = await isARSupportedOnDevice();
+      if (!ar) throw new Error("Your device does not support AR.");
 
-        const hasPermission = await requestLocationPermission();
-        if (!hasPermission) throw new Error("Location permission denied.");
+      const hasPermission = await requestLocationPermission();
+      if (!hasPermission) throw new Error("Location permission denied.");
 
-        const location = await getCurrentLocation();
+      const location = await getCurrentLocation();
 
-        const distance = haversine(location, FIXED_COORDS, { unit: 'meter' });
-        if (distance > 100) {
-          throw new Error(`You are ${Math.round(distance)}m away. Move closer to use this experience.`);
-        } else {
-          setState('ready');
-          setLatLon(location);
-        }
+      const distance = haversine(
+        { latitude: location.lat, longitude: location.lon },
+        FIXED_COORDS,
+        { unit: 'meter' }
+      );
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (e: any) {
-        console.log(e);
-        setError(e.message || 'Something went wrong');
-        setState('error');
+      if (distance > 100) {
+        throw new Error(`You are ${Math.round(distance)}m away. Move closer to use this experience.`);
+      } else {
+        setLatLon(location);
+        setState('ready');
       }
-    };
-
-    checkRequirements();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      console.error(e);
+      setError(e.message || 'Something went wrong');
+      setState('error');
+    }
   }, []);
 
+  useEffect(() => {
+    checkRequirements();
+  }, [checkRequirements]);
+
   function onRetry() {
-    setState('ready');
-    setError('');
+    checkRequirements();
   }
 
   function onClose() {
-    setState('ready');
+    setLatLon({ lat: FIXED_COORDS.latitude, lon: FIXED_COORDS.longitude });
     setError('');
+    setState('ready');
   }
 
   if (state === 'loading') {

@@ -23,8 +23,8 @@ export async function getCurrentLocation(): Promise<{ lat: number; lon: number }
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
+        timeout: 5000,
+        maximumAge: 1000
       }
     );
   });
