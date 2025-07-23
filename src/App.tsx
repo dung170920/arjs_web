@@ -1,211 +1,65 @@
-import React, { useEffect, useRef, useState } from 'react';
-import * as THREE from 'three';
-import * as LocAR from 'locar';
-import type { IData } from './types';
-import TiltCheck from './components/TiltCheck';
-import IconLink from './assets/images/icon_link.svg?react'
+import React, { useEffect, useState } from 'react';
+import ARPage from './pages/ARPage';
+import ErrorPage from './pages/ErrorPage';
+import { isARSupportedOnDevice, requestLocationPermission, getCurrentLocation } from './utils/checks';
+import haversine from 'haversine';
+
+const FIXED_COORDS = { latitude: 49.6045416, longitude: 8.8033684 };
 
 const App: React.FC = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const headingRef = useRef<HTMLDivElement>(null);
-  const sceneRef = useRef<THREE.Scene>(new THREE.Scene());
-  const [dataItems, setDataItems] = useState<IData[]>([]);
-  const initialHeadingRef = useRef<number | null>(null);
+  const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [error, setError] = useState<string>('');
+  const [latLon, setLatLon] = useState<{ lat: number; lon: number } | null>(null);
 
   useEffect(() => {
-    if (!containerRef.current || !headingRef.current) return;
-
-    containerRef.current.querySelectorAll('canvas').forEach(canvas => canvas.remove());
-
-    const scene = sceneRef.current;
-
-    const camera = new THREE.PerspectiveCamera(
-      60,
-      window.innerWidth / window.innerHeight,
-      0.5,
-      500
-    );
-
-    const renderer = new THREE.WebGLRenderer({ alpha: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    containerRef.current.appendChild(renderer.domElement);
-
-    window.addEventListener('resize', () => {
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-    });
-
-    const locar = new LocAR.LocationBased(scene, camera);
-
-    new LocAR.Webcam({
-      idealWidth: 1024,
-      idealHeight: 768,
-      onVideoStarted: (texture: THREE.Texture) => {
-        scene.background = texture;
-      }
-    });
-
-    const deviceOrientationControls = new LocAR.DeviceOrientationControls(camera);
-
-    renderer.setAnimationLoop(() => {
-      deviceOrientationControls.update();
-
-      const dir = new THREE.Vector3();
-      camera.getWorldDirection(dir);
-
-      const angleRad = Math.atan2(-dir.x, dir.z);
-      const angleDeg = ((THREE.MathUtils.radToDeg(angleRad) + 360) % 360);
-
-      if (initialHeadingRef.current === null) {
-        initialHeadingRef.current = angleDeg;
-      }
-
-      let headingText = '';
-      if (angleDeg < 22.5 || angleDeg >= 337.5) headingText = 'North';
-      else if (angleDeg >= 22.5 && angleDeg < 67.5) headingText = 'Northeast';
-      else if (angleDeg >= 67.5 && angleDeg < 112.5) headingText = 'East';
-      else if (angleDeg >= 112.5 && angleDeg < 157.5) headingText = 'Southeast';
-      else if (angleDeg >= 157.5 && angleDeg < 202.5) headingText = 'South';
-      else if (angleDeg >= 202.5 && angleDeg < 247.5) headingText = 'Southwest';
-      else if (angleDeg >= 247.5 && angleDeg < 292.5) headingText = 'West';
-      else if (angleDeg >= 292.5 && angleDeg < 337.5) headingText = 'Northwest';
-
-      headingRef.current!.innerText = `${Math.round(angleDeg)}° - ${headingText}`;
-
-      renderer.render(scene, camera);
-    });
-
-    const waitForPosition = () => {
-      if (!navigator.geolocation) {
-        alert("Geolocation API not available. Please use a supported browser.");
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          if (!pos.coords || (!pos.coords.latitude && !pos.coords.longitude)) {
-            alert("Unable to determine GPS position. Please move to an open area.");
-            setTimeout(waitForPosition, 3000);
-            return;
-          }
-
-          const lon = pos.coords.longitude;
-          const lat = pos.coords.latitude;
-
-          locar.fakeGps(lon, lat);
-        },
-        (err) => {
-          console.error("GPS error:", err);
-          setTimeout(waitForPosition, 3000);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 1000
-        }
-      );
-    };
-
-    const fetchData = async () => {
+    const checkRequirements = async () => {
       try {
-        const res = await fetch(
-          'https://gist.githubusercontent.com/dung170920/c2c0d752ae7f15258f8854d8fd6383fe/raw/ar.json'
-        );
-        const json = await res.json();
-        setDataItems(json);
-      } catch (err) {
-        console.error('Error fetching JSON:', err);
+        const ar = await isARSupportedOnDevice();
+        if (!ar) throw new Error("Your device does not support AR.");
+
+        const hasPermission = await requestLocationPermission();
+        if (!hasPermission) throw new Error("Location permission denied.");
+
+        const location = await getCurrentLocation();
+
+        const distance = haversine(location, FIXED_COORDS, { unit: 'meter' });
+        if (distance > 100) {
+          throw new Error(`You are ${Math.round(distance)}m away. Move closer to use this experience.`);
+        }
+
+        setLatLon(location);
+
+        setState('ready');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (e: any) {
+        console.log(e);
+        setError(e.message || 'Something went wrong');
+        setState('error');
       }
     };
 
-    fetchData();
-    waitForPosition();
-
-    return () => {
-      renderer.dispose();
-      containerRef.current?.querySelector('canvas')?.remove();
-    };
+    checkRequirements();
   }, []);
 
-  useEffect(() => {
-    const scene = sceneRef.current;
+  function onRetry() {
+    setState('ready');
+    setError('');
+  }
 
-    if (initialHeadingRef.current === null) return;
+  function onClose() {
+    setState('ready');
+    setError('');
+  }
 
-    dataItems.forEach((item, index) => {
-      const rad = THREE.MathUtils.degToRad(item.heading);
+  if (state === 'loading') {
+    return <div className='flex-centerc h-screen w-screen'>Loading, checking your device…</div>;
+  }
 
-      const distanceMax = Math.max(...dataItems.map(item => item.distance));
-      const radiusMin = 200;
-      const radiusMax = 500;
-      const normalized = item.distance / distanceMax;
-      const radius = radiusMin + normalized * (radiusMax - radiusMin);
+  if (state === 'error') {
+    return <ErrorPage message={error} onRetry={onRetry} onClose={onClose} />;
+  }
 
-      const x = radius * Math.sin(rad);
-      const z = -radius * Math.cos(rad);
-      const y = Math.sin(index * 0.5) * 40;
-
-      const canvas = document.createElement('canvas');
-      canvas.width = 1024;
-      canvas.height = 256;
-      const ctx = canvas.getContext('2d')!;
-
-      // Background
-      ctx.fillStyle = 'rgba(0,0,0,0.5)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.fillStyle = '#fff';
-      ctx.font = '80px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(item.label, canvas.width / 2, canvas.height / 2);
-
-      const texture = new THREE.CanvasTexture(canvas);
-      const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
-      const sprite = new THREE.Sprite(spriteMaterial);
-      sprite.scale.set(150, 40, 1);
-      sprite.position.set(x, y, z);
-      scene.add(sprite);
-    });
-  }, [dataItems]);
-
-  return (
-    <div
-      ref={containerRef}
-      style={{
-        width: '100vw',
-        height: '100vh',
-        overflow: 'hidden',
-        position: 'relative'
-      }}
-    >
-      <div
-        ref={headingRef}
-        style={{
-          position: 'absolute',
-          top: 10,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          color: '#fff',
-          background: 'rgba(0,0,0,0.5)',
-          padding: '4px 8px',
-          borderRadius: 4,
-          fontSize: 14,
-          zIndex: 1
-        }}
-      >
-        0° - North
-      </div>
-      <TiltCheck />
-      <a
-        href='#'
-        className="floating-btn"
-      >
-        <IconLink />
-      </a>
-    </div>
-  );
+  return latLon && <ARPage lat={latLon.lat} lon={latLon.lon} />;
 };
 
 export default App;
