@@ -22,7 +22,7 @@ export async function getCurrentLocation(): Promise<{ lat: number; lon: number }
         reject(new Error('Failed to get current location: ' + err.message));
       },
       {
-        enableHighAccuracy: true,
+        enableHighAccuracy: false,
         timeout: 5000,
         maximumAge: 1000
       }

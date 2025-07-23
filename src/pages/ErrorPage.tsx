@@ -9,7 +9,7 @@ interface Props {
 const ErrorPage: React.FC<Props> = ({ message, onClose, onRetry }) => {
   return (
     <div className="flex-centerc h-screen w-screen">
-      <Error height={300} />
+      <Error width={250} height={250} />
       <p className='error-message'>{message}</p>
       <div className="flex-center">
         <button onClick={onRetry}>Try again</button>
