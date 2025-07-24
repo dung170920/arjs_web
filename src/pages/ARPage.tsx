@@ -136,6 +136,7 @@ const ARPage: React.FC<{ lat: number; lon: number }> = ({ lat, lon }) => {
       const sprite = new THREE.Sprite(spriteMaterial);
       sprite.scale.set(150, 40, 1);
       sprite.position.set(x, y, z);
+      sprite.userData = { url: 'https://www.google.com/' };
       scene.add(sprite);
     });
   }, [dataItems]);
