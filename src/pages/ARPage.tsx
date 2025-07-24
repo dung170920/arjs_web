@@ -68,8 +68,8 @@ const ARPage: React.FC<{ lat: number; lon: number }> = ({ lat, lon }) => {
       const dir = new THREE.Vector3();
       camera.getWorldDirection(dir);
 
-      const angleRad = Math.atan2(-dir.x, dir.z);
-      const angleDeg = ((THREE.MathUtils.radToDeg(angleRad) + 360) % 360);
+      const angleRad = Math.atan2(dir.x, dir.z);
+      const angleDeg = (360 - THREE.MathUtils.radToDeg(angleRad)) % 360;
 
       if (initialHeadingRef.current === null) {
         initialHeadingRef.current = angleDeg;
